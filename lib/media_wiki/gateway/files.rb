@@ -179,6 +179,34 @@ module MediaWiki
           'iulimit'     => @options[:limit]
         ))
       end
+      
+      # Get a list of all global (cross wiki) usages of a given file (relies on the GlobalUsage extension)
+      #
+      # [filename] Name of the file (e.g. 'File:Tetrapyloctomy.jpg')
+      # [options]
+      #
+      # Returns a list of page names
+      
+      def globalusage(filename, options = {})
+        form_data = options.merge(
+          'action'    => 'query',
+          'prop'      => 'globalusage',
+          'titles'    => filename,
+          'gulimit'   => @options[:limit],
+          'continue'  => '',
+          'guprop'    => 'url|pageid|namespace'
+        )
+        xml = send_request(form_data)
+        ret = []
+        if valid_page?(page = xml.elements['query/pages/page'])
+          if gu = REXML::XPath.match(page, 'globalusage/gu')
+            gu.each {|usage| 
+              ret << {:wiki => usage.attributes['wiki'], :title => usage.attributes['title'] } if usage.attributes['ns'] == '0' # only include mainspace usage
+            }
+          end
+        end
+        return ret
+      end
 
     end
 
