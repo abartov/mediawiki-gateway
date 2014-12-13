@@ -164,6 +164,22 @@ module MediaWiki
         end
       end
 
+      # Get a list of all local (same wiki) usages of a given file
+      #
+      # [filename] Name of the file (e.g. 'File:Tetrapyloctomy.jpg')
+      # [options]
+      #
+      # Returns a list of page names
+      
+      def imageusage(filename, options = {})
+        iterate_query('imageusage', '//iu', 'title', 'iufrom', options.merge(
+          'iutitle'    => filename,
+          'iunamespace' => 0,
+          'continue'    => '',
+          'iulimit'     => @options[:limit]
+        ))
+      end
+
     end
 
     include Files
